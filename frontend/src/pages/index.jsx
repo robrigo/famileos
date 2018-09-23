@@ -13,9 +13,11 @@ import TextField from '@material-ui/core/TextField';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 
-// NEVER store private keys in any source code in your real life development
-// This is for demo purposes only!
-const parent = {"name":"useraaaaaaaa", "privateKey":"5K7mtrinTFrVTduSxizUc5hjXJEtTjVTsqSHeBHes1Viep86FP5", "publicKey":"EOS6kYgMTCh1iqpq9XGNQbEi8Q6k5GujefN9DSs55dcjVyFAq7B6b"}
+const parent = {
+  name: 'Jennifer',
+  privateKey: '5K7mtrinTFrVTduSxizUc5hjXJEtTjVTsqSHeBHes1Viep86FP5',
+  publicKey: 'EOS6kYgMTCh1iqpq9XGNQbEi8Q6k5GujefN9DSs55dcjVyFAq7B6b'
+}
 const eos = Eos({ keyProvider: parent.privateKey });
 
 // Index component
@@ -23,17 +25,17 @@ class Index extends Component {
 
   constructor(props) {
     super(props)
-    this.state = {
-      noteTable: [] // to store the table rows from smart contract
-    };
-    this.handleFormEvent = this.handleFormEvent.bind(this);
+
+    this.state = {}
   }
 
   // generic function to handle form events (e.g. "submit" / "reset")
   // push transactions to the blockchain by using eosjs
-  async handleFormEvent(event) {
+  async createChildAccount(event) {
     // stop default behaviour
     event.preventDefault();
+
+    const childName = event.target.name.value
 
     // // prepare variables for the switch below to send transactions
     // let actionName = "";
@@ -69,20 +71,20 @@ class Index extends Component {
     const result = await eos.transaction(tr => {
       tr.newaccount({
         creator: parent.name,
-        name: 'child',
+        name: childName,
         owner: `${parent.name}@active`,
         active: keys.publicKeys.active
       })
 
       tr.buyrambytes({
         payer:  parent.name,
-        receiver: 'child',
+        receiver: childName,
         bytes: 8192
       })
 
       tr.delegatebw({
         from: parent.name,
-        receiver: 'child',
+        receiver: childName,
         stake_net_quantity: '10.0000 SYS',
         stake_cpu_quantity: '10.0000 SYS',
         transfer: 0
@@ -90,7 +92,8 @@ class Index extends Component {
     })
 
     console.log(result);
-    this.getTable();
+
+    this.setState({ childName })
   }
 
   // gets table data from the blockchain
@@ -106,12 +109,9 @@ class Index extends Component {
     }).then(result => this.setState({ noteTable: result.rows }));
   }
 
-  componentDidMount() {
-    // this.getTable();
-  }
-
   render() {
-    const { classes } = this.props;
+    const { classes } = this.props
+    const { childName } = this.state
 
     return (
       <div>
@@ -122,32 +122,21 @@ class Index extends Component {
             </Typography>
           </Toolbar>
         </AppBar>
+
+        <Typography variant="headline" component="h2">
+          Welcome {parent.name}!
+        </Typography>
+
         <Paper className={classes.paper}>
-          <form onSubmit={this.handleFormEvent}>
+          <form onSubmit={this.createChildAccount.bind(this)}>
             <Typography variant="headline" component="h2">
               Create Child Account
             </Typography>
             <TextField
-              name="account"
+              name="name"
               autoComplete="off"
-              label="Account"
+              label="Child Account Name"
               margin="normal"
-              fullWidth
-            />
-            <TextField
-              name="privateKey"
-              autoComplete="off"
-              label="Private key"
-              margin="normal"
-              fullWidth
-            />
-            <TextField
-              name="note"
-              autoComplete="off"
-              label="Note (Optional)"
-              margin="normal"
-              multiline
-              rows="10"
               fullWidth
             />
             <Button
@@ -159,6 +148,68 @@ class Index extends Component {
             </Button>
           </form>
         </Paper>
+
+        {childName &&
+          <Paper className={classes.paper}>
+            <form onSubmit={this.addToWhitelist.bind(this)}>
+              <Typography variant="headline" component="h2">
+                Add Action To Whitelist
+              </Typography>
+              <TextField
+                name="contractName"
+                autoComplete="off"
+                label="Account Name of Contract"
+                margin="normal"
+                fullWidth
+              />
+              <TextField
+                name="actionName"
+                autoComplete="off"
+                label="Name of Action"
+                margin="normal"
+                fullWidth
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                className={classes.formButton}
+                type="submit">
+                Add Action to Whitelist
+              </Button>
+            </form>
+          </Paper>
+        }
+
+        {childName &&
+          <Paper className={classes.paper}>
+            <form onSubmit={this.removeFromWhitelist.bind(this)}>
+              <Typography variant="headline" component="h2">
+                Remove Action From Whitelist
+              </Typography>
+              <TextField
+                name="contractName"
+                autoComplete="off"
+                label="Account Name of Contract"
+                margin="normal"
+                fullWidth
+              />
+              <TextField
+                name="actionName"
+                autoComplete="off"
+                label="Name of Action"
+                margin="normal"
+                fullWidth
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                className={classes.formButton}
+                type="submit">
+                Remove Action from Whitelist
+              </Button>
+            </form>
+          </Paper>
+        }
       </div>
     );
   }
