@@ -48,16 +48,20 @@ class famileos : public eosio::contract {
       void validate(account_name child, account_name contract, action_name action) {
 
          whitelist itr;
-         int found = -1;
+         int allowed = 1;
          for(auto& item : _records) {
-            if (item.child != child && item.contract != contract && item.action != action) {
-               itr = item;
-               found = 1;
-               break;
+            if (item.child == child) {
+               if (item.contract == contract && item.action == action) {
+                  allowed = 1;
+                  break;
+               } else {
+                  allowed = 0;
+               }
             }
+            
          }
 
-         eosio_assert(found == 1, "Action is not whitelisted.");
+         eosio_assert(allowed == 1, "Action is not whitelisted.");
       }
 
 
