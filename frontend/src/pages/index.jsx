@@ -14,7 +14,7 @@ import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 
 const parent = {
-  name: 'Jennifer',
+  name: 'useraaaaaaaa',
   privateKey: '5K7mtrinTFrVTduSxizUc5hjXJEtTjVTsqSHeBHes1Viep86FP5',
   publicKey: 'EOS6kYgMTCh1iqpq9XGNQbEi8Q6k5GujefN9DSs55dcjVyFAq7B6b'
 }
@@ -31,40 +31,11 @@ class Index extends Component {
 
   // generic function to handle form events (e.g. "submit" / "reset")
   // push transactions to the blockchain by using eosjs
-  async createChildAccount(event) {
+  async createChildAccount(evt) {
     // stop default behaviour
-    event.preventDefault();
+    evt.preventDefault();
 
-    const childName = event.target.name.value
-
-    // // prepare variables for the switch below to send transactions
-    // let actionName = "";
-    // let actionData = {};
-    //
-    // // define actionName and action according to event type
-    // switch (event.type) {
-    //   case "submit":
-    //     actionName = "update";
-    //     actionData = {
-    //       _user: parent.name
-    //     };
-    //     break;
-    //   default:
-    //     return;
-    // }
-
-    // eosjs function call: connect to the blockchain
-    // const result = await eos.transaction({
-    //   actions: [{
-    //     account: "notechainacc",
-    //     name: actionName,
-    //     authorization: [{
-    //       actor: parent.name,
-    //       permission: 'active',
-    //     }],
-    //     data: actionData,
-    //   }],
-    // });
+    const childName = evt.target.name.value
 
     const keys = await Keygen.generateMasterKeys()
 
@@ -94,6 +65,58 @@ class Index extends Component {
     console.log(result);
 
     this.setState({ childName })
+  }
+
+  async addToWhitelist(evt) {
+    evt.preventDefault();
+
+    const { childName } = this.state
+    const { actionName, contractName } = evt.target
+
+
+    // eosjs function call: connect to the blockchain
+    const result = await eos.transaction({
+      actions: [{
+        account: 'famileosiopc',
+        name: 'create',
+        authorization: [{
+          actor: parent.name,
+          permission: 'active',
+        }],
+        data: {
+          parent: parent.name,
+          child: childName,
+          contract: contractName.value,
+          action: actionName.value
+        },
+      }],
+    });
+  }
+
+  async removeFromWhitelist(evt) {
+    evt.preventDefault();
+
+    const { childName } = this.state
+    const { actionName, contractName } = evt.target
+
+
+    // eosjs function call: connect to the blockchain
+    const result = await eos.transaction({
+      actions: [{
+        account: 'famileosiopc',
+        name: 'remove',
+        authorization: [{
+          actor: parent.name,
+          permission: 'active',
+        }],
+        data: {
+          parent: parent.name,
+          child: childName,
+          contract: contractName.value,
+          action: actionName.value
+        },
+      }],
+    });
   }
 
   // gets table data from the blockchain
