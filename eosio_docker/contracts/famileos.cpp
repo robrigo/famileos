@@ -51,14 +51,12 @@ class famileos : public eosio::contract {
          int allowed = 1;
          for(auto& item : _records) {
             if (item.child == child) {
-               if (item.contract == contract && item.action == action) {
-                  allowed = 1;
-                  break;
-               } else {
-                  allowed = 0;
-               }
+               allowed = 0;
             }
-            
+            if (item.contract == contract && item.action == action) {
+               allowed = 1;
+               break;
+            }
          }
 
          eosio_assert(allowed == 1, "Action is not whitelisted.");

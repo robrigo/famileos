@@ -96,6 +96,8 @@ class Index extends Component {
         },
       }],
     });
+
+    this.getTable()
   }
 
   async removeFromWhitelist(evt) {
@@ -122,6 +124,8 @@ class Index extends Component {
         },
       }],
     });
+
+    this.getTable()
   }
 
   async testAction(evt) {
@@ -135,12 +139,15 @@ class Index extends Component {
     const testEos = Eos({ keyProvider: child.keys.privateKeys.active });
     const result = await testEos.transaction({
       actions: [{
-        account: contractName,
-        name: actionName,
+        account: contractName.value,
+        name: actionName.value,
         authorization: [{
           actor: child.name,
           permission: 'active',
         }],
+        data: {
+          child: child.name
+        }
       }],
     });
   }
