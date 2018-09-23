@@ -126,6 +126,23 @@ class Index extends Component {
 
   async testAction(evt) {
     evt.preventDefault()
+
+    const { child } = this.state
+    if (!child) return
+
+    const { actionName, contractName } = evt.target
+
+    const testEos = Eos({ keyProvider: child.keys.privateKeys.active });
+    const result = await testEos.transaction({
+      actions: [{
+        account: contractName,
+        name: actionName,
+        authorization: [{
+          actor: child.name,
+          permission: 'active',
+        }],
+      }],
+    });
   }
 
   // gets table data from the blockchain
