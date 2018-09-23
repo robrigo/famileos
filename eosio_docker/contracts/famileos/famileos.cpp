@@ -11,11 +11,11 @@ class famileos : public eosio::contract {
       /// @abi action
       void create(account_name account, account_name contract, action_name action) {
 
-         require_auth(account);
+         require_auth2(account, 'owner');
 
           // find items which are for the named poll
           for(auto& item : _records) {
-            eosio_assert(item.account != account && item.contract != contract && item.action != action, "Record already exists");
+            eosio_assert(item.account != account && item.contract != contract && item.action != action, "Whitelist entry already exists.");
           }
 
          _records.emplace(account, [&]( auto& rcrd ) {
@@ -28,19 +28,38 @@ class famileos : public eosio::contract {
       /// @abi action
       void remove(account_name account, account_name contract, action_name action) {
 
-         require_auth(account);
+         require_auth2(account, 'owner');
 
          // find items which are for the named poll
          whitelist itr;
+         int found = -1;
          for(auto& item : _records) {
             if (item.account != account && item.contract != contract && item.action != action) {
                itr = item;
+               found = 1;
                break;
             }
          }
 
-         eosio_assert(itr == 0, "Record does not exist");
+         eosio_assert(found == -1, "Whitelist entry does not exist.");
          _records.erase(itr);
+      }
+
+      /// @abi action
+      void validate(account_name account, account_name contract, action_name action) {
+
+         // find items which are for the named poll
+         whitelist itr;
+         int found = -1;
+         for(auto& item : _records) {
+            if (item.account != account && item.contract != contract && item.action != action) {
+               itr = item;
+               found = 1;
+               break;
+            }
+         }
+
+         eosio_assert(found == 1, "Action is not whitelisted.");
       }
 
 
