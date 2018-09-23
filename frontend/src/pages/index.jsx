@@ -7,7 +7,6 @@ import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import TextField from '@material-ui/core/TextField';
 import Paper from '@material-ui/core/Paper';
@@ -70,13 +69,13 @@ class Index extends Component {
 
     console.log(result);
 
-    this.setState({ childName })
+    this.setState({ child: { name: childName, keys } })
   }
 
   async addToWhitelist(evt) {
     evt.preventDefault();
 
-    const { childName } = this.state
+    const { child } = this.state
     const { actionName, contractName } = evt.target
 
 
@@ -91,7 +90,7 @@ class Index extends Component {
         }],
         data: {
           parent: parent.name,
-          child: childName,
+          child: child.name,
           contract: contractName.value,
           action: actionName.value
         },
@@ -102,7 +101,7 @@ class Index extends Component {
   async removeFromWhitelist(evt) {
     evt.preventDefault();
 
-    const { childName } = this.state
+    const { child } = this.state
     const { actionName, contractName } = evt.target
 
 
@@ -117,10 +116,31 @@ class Index extends Component {
         }],
         data: {
           parent: parent.name,
-          child: childName,
+          child: child.name,
           contract: contractName.value,
           action: actionName.value
         },
+      }],
+    });
+  }
+
+  async testAction(evt) {
+    evt.preventDefault()
+
+    const { child } = this.state
+    if (!child) return
+
+    const { actionName, contractName } = evt.target
+
+    const testEos = Eos({ keyProvider: child.keys.privateKeys.active });
+    const result = await testEos.transaction({
+      actions: [{
+        account: contractName,
+        name: actionName,
+        authorization: [{
+          actor: child.name,
+          permission: 'active',
+        }],
       }],
     });
   }
@@ -140,7 +160,7 @@ class Index extends Component {
 
   render() {
     const { classes } = this.props
-    const { childName, whitelist } = this.state
+    const { child, whitelist } = this.state
 
     return (
       <div>
@@ -156,29 +176,29 @@ class Index extends Component {
           Welcome {parent.name}!
         </Typography>
 
-        <Paper className={classes.paper}>
-          <form onSubmit={this.createChildAccount.bind(this)}>
-            <Typography variant="headline" component="h2">
-              Create Child Account
-            </Typography>
-            <TextField
-              name="name"
-              autoComplete="off"
-              label="Child Account Name"
-              margin="normal"
-              fullWidth
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              className={classes.formButton}
-              type="submit">
-              Create Child Account
-            </Button>
-          </form>
-        </Paper>
+        <div className={classes.row}>
+          <Paper className={classes.paper}>
+            <form onSubmit={this.createChildAccount.bind(this)}>
+              <Typography variant="headline" component="h2">
+                Create Child Account
+              </Typography>
+              <TextField
+                name="name"
+                autoComplete="off"
+                label="Child Account Name"
+                margin="normal"
+                fullWidth
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                className={classes.formButton}
+                type="submit">
+                Create Child Account
+              </Button>
+            </form>
+          </Paper>
 
-        {childName &&
           <Paper className={classes.paper}>
             <form onSubmit={this.addToWhitelist.bind(this)}>
               <Typography variant="headline" component="h2">
@@ -207,9 +227,9 @@ class Index extends Component {
               </Button>
             </form>
           </Paper>
-        }
+        </div>
 
-        {childName &&
+        <div className={classes.row}>
           <Paper className={classes.paper}>
             <form onSubmit={this.removeFromWhitelist.bind(this)}>
               <Typography variant="headline" component="h2">
@@ -238,7 +258,36 @@ class Index extends Component {
               </Button>
             </form>
           </Paper>
-        }
+
+          <Paper className={classes.paper}>
+            <form onSubmit={this.testAction.bind(this)}>
+              <Typography variant="headline" component="h2">
+                Call an Action
+              </Typography>
+              <TextField
+                name="contractName"
+                autoComplete="off"
+                label="Account Name of Contract"
+                margin="normal"
+                fullWidth
+              />
+              <TextField
+                name="actionName"
+                autoComplete="off"
+                label="Name of Action"
+                margin="normal"
+                fullWidth
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                className={classes.formButton}
+                type="submit">
+                Call Action
+              </Button>
+            </form>
+          </Paper>
+        </div>
 
         {whitelist.map((record) => (
           <div>{JSON.stringify(record)}</div>
@@ -251,23 +300,20 @@ class Index extends Component {
 
 // set up styling classes using material-ui "withStyles"
 const styles = theme => ({
-  card: {
-    margin: 20,
-  },
   paper: {
     ...theme.mixins.gutters(),
     paddingTop: theme.spacing.unit * 2,
     paddingBottom: theme.spacing.unit * 2,
+    margin: 10,
+    width: 500
   },
   formButton: {
     marginTop: theme.spacing.unit,
-    width: "100%",
   },
-  pre: {
-    background: "#ccc",
-    padding: 10,
-    marginBottom: 0.
-  },
+  row: {
+    display: 'flex',
+    justifyContent: 'center'
+  }
 });
 
 export default withStyles(styles)(Index);
