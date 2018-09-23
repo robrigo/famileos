@@ -26,7 +26,13 @@ class Index extends Component {
   constructor(props) {
     super(props)
 
-    this.state = {}
+    this.state = {
+      whitelist: []
+    }
+  }
+
+  componentDidMount() {
+    this.getTable()
   }
 
   // generic function to handle form events (e.g. "submit" / "reset")
@@ -125,16 +131,16 @@ class Index extends Component {
     const eos = Eos();
     eos.getTableRows({
       "json": true,
-      "code": "notechainacc",   // contract who owns the table
-      "scope": "notechainacc",  // scope of the table
-      "table": "notestruct",    // name of the table as specified by the contract abi
+      "code": "famileosiopc",   // contract who owns the table
+      "scope": "famileosiopc",  // scope of the table
+      "table": "whitelist",    // name of the table as specified by the contract abi
       "limit": 100,
-    }).then(result => this.setState({ noteTable: result.rows }));
+    }).then(result => this.setState({ whitelist: result.rows }));
   }
 
   render() {
     const { classes } = this.props
-    const { childName } = this.state
+    const { childName, whitelist } = this.state
 
     return (
       <div>
@@ -233,6 +239,10 @@ class Index extends Component {
             </form>
           </Paper>
         }
+
+        {whitelist.map((record) => (
+          <div>{JSON.stringify(record)}</div>
+        ))}
       </div>
     );
   }
