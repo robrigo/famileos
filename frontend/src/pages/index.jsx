@@ -70,7 +70,7 @@ class Index extends Component {
       tr.newaccount({
         creator: parent.name,
         name: 'child',
-        owner: parent.name,
+        owner: `${parent.name}@active`,
         active: keys.publicKeys.active
       })
 
